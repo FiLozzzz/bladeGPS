@@ -10,7 +10,7 @@ try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.connect((sys.argv[1], int(sys.argv[2])))
 
-	fp = open("/home/syssec/parse.txt", "r")
+	fp = open("track.txt", "r")
 	lines = fp.readlines()
 	fp.close()
 
