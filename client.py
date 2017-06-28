@@ -2,13 +2,9 @@
 
 import sys, socket, struct, time
 
-if len(sys.argv) != 3:
-	print sys.argv[0]+" <IP> <PORT>"
-	exit()
-
 try:
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	s.connect((sys.argv[1], int(sys.argv[2])))
+	s.connect(("localhost", 8080))
 
 	fp = open("track.txt", "r")
 	lines = fp.readlines()
