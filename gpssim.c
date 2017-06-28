@@ -17,6 +17,9 @@
 #ifdef BLADE_GPS
 #include "bladegps.h"
 
+#include <unistd.h>
+#include <termios.h>
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <fcntl.h>
@@ -1665,6 +1668,38 @@ void usage(void)
 }
 #endif
 
+#ifdef BLADE_GPS
+int _kbhit(void)
+{
+	struct termios oldt, newt;
+	int ch;
+	int oldf;
+
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
+
+	newt.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+
+	oldf = fcntl(STDIN_FILENO, F_GETFL, 0);
+	fcntl(STDIN_FILENO, F_SETFL, oldf | O_NONBLOCK);
+
+	ch = getchar();
+
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	fcntl(STDIN_FILENO, F_SETFL, oldf);
+
+	if(ch != EOF)
+	{
+		ungetc(ch, stdin);
+		return 1;
+	}
+
+	return 0;
+}
+#endif
+
+
 #ifndef BLADE_GPS
 int main(int argc, char *argv[])
 {
@@ -2274,27 +2309,11 @@ void *gps_task(void *arg)
 #ifdef BLADE_GPS
 		if (interactive)
 		{
-			if(read(clnt_sock, llh2, sizeof(llh2)) == sizeof(llh2))
-			{
-				llh[0] = (double)llh2[0] / R2D;
-				llh[1] = (double)llh2[1] / R2D;
-				llh[2] = (double)llh2[2];
-
-				llh2xyz(llh, xyz[iumd]);
-				printf("\nxyz = %11.1f, %11.1f, %11.1f\n", xyz[iumd][0], xyz[iumd][1], xyz[iumd][2]);
-				printf("llh = %11.6f, %11.6f, %11.1f\n", llh2[0], llh2[1], llh2[2]);
-			}
-			else
-			{
-				xyz[iumd][0] = xyz[iumd-1][0];
-				xyz[iumd][1] = xyz[iumd-1][1];
-				xyz[iumd][2] = xyz[iumd-1][2];
-			}
-			/*key_direction = UNDEF;
+			key_direction = UNDEF;
 
 			if(_kbhit())
 			{
-				key = _getch();
+				key = getchar();
 				switch (key)
 				{
 				case NORTH_KEY:
@@ -2361,7 +2380,27 @@ void *gps_task(void *arg)
 				xyz[iumd][0] += tmat[0][0]*neu[0] + tmat[1][0]*neu[1] + tmat[2][0]*neu[2];
 				xyz[iumd][1] += tmat[0][1]*neu[0] + tmat[1][1]*neu[1] + tmat[2][1]*neu[2];
 				xyz[iumd][2] += tmat[0][2]*neu[0] + tmat[1][2]*neu[1] + tmat[2][2]*neu[2];
-			}*/
+			}
+			
+			else
+			{
+				if(read(clnt_sock, llh2, sizeof(llh2)) == sizeof(llh2))
+				{
+					llh[0] = (double)llh2[0] / R2D;
+					llh[1] = (double)llh2[1] / R2D;
+					llh[2] = (double)llh2[2];
+
+					llh2xyz(llh, xyz[iumd]);
+					printf("\nxyz = %11.1f, %11.1f, %11.1f\n", xyz[iumd][0], xyz[iumd][1], xyz[iumd][2]);
+					printf("llh = %11.6f, %11.6f, %11.1f\n", llh2[0], llh2[1], llh2[2]);
+				}
+				else
+				{
+					xyz[iumd][0] = xyz[iumd-1][0];
+					xyz[iumd][1] = xyz[iumd-1][1];
+					xyz[iumd][2] = xyz[iumd-1][2];
+				}
+			}
 		}
 #endif
 		for (i=0; i<MAX_CHAN; i++)
