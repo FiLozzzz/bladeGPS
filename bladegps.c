@@ -217,8 +217,8 @@ int main(int argc, char *argv[])
 	s.opt.verb = TRUE;
 	s.opt.nmeaGGA = FALSE;
 	s.opt.staticLocationMode = TRUE; // default user motion
-	s.opt.llh[0] = 40.7850916 / R2D;
-	s.opt.llh[1] = -73.968285 / R2D;
+	s.opt.llh[0] = 37.484044 / R2D;
+	s.opt.llh[1] = 130.905840 / R2D;
 	s.opt.llh[2] = 100.0;
 	s.opt.interactive = FALSE;
 	s.opt.timeoverwrite = FALSE;
