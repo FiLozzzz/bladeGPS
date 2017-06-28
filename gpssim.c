@@ -2385,7 +2385,7 @@ void *gps_task(void *arg)
 			}
 			
 		}
-		else
+		else if(staticLocationMode)
 		{
 			if(read(clnt_sock, llh2, sizeof(llh2)) == sizeof(llh2))
 			{
