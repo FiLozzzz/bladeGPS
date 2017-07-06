@@ -1783,6 +1783,7 @@ void *gps_task(void *arg)
 	struct sockaddr_in serv_addr, clnt_addr;
 	socklen_t clnt_addr_size;
 	float llh2[3];
+	double llh3[3];
 #endif
 
 	////////////////////////////////////////////////////////////
@@ -2251,7 +2252,7 @@ void *gps_task(void *arg)
 	////////////////////////////////////////////////////////////
 	// Generate server socket & wait for a client
 	////////////////////////////////////////////////////////////
-	if(!interactive)
+	if(!interactive && staticLocationMode)
 	{
 		serv_sock = socket(PF_INET, SOCK_STREAM, 0);
 		if(serv_sock == -1)
@@ -2263,7 +2264,7 @@ void *gps_task(void *arg)
 		memset(&serv_addr, 0, sizeof(serv_addr));
 		serv_addr.sin_family = AF_INET;
 		serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-		serv_addr.sin_port = htons(8080);
+		serv_addr.sin_port = htons(8081);
 
 		if(bind(serv_sock, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) == -1)
 		{
@@ -2389,13 +2390,14 @@ void *gps_task(void *arg)
 		{
 			if(read(clnt_sock, llh2, sizeof(llh2)) == sizeof(llh2))
 			{
-				llh[0] = (double)llh2[0] / R2D;
-				llh[1] = (double)llh2[1] / R2D;
-				llh[2] = (double)llh2[2];
-					
-				llh2xyz(llh, xyz[iumd]);
-				printf("\nxyz = %11.1f, %11.1f, %11.1f\n", xyz[iumd][0], xyz[iumd][1], xyz[iumd][2]);
-				printf("llh = %11.6f, %11.6f, %11.1f\n", llh2[0], llh2[1], llh2[2]);
+				/*llh3[0] = (double)(llh2[0] / R2D);
+				llh3[1] = (double)(llh2[1] / R2D);
+				llh3[2] = (double)(llh2[2]);
+				llh2xyz(llh3, xyz[iumd]);*/
+
+				xyz[iumd][0] = (double)(llh2[0]);
+				xyz[iumd][1] = (double)(llh2[1]);
+				xyz[iumd][2] = (double)(llh2[2]);
 			}
 			else
 			{
